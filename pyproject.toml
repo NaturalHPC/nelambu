@@ -64,6 +64,7 @@ Changelog = "https://github.com/NaturalHPC/nelambu/CHANGELOG.md"
 ReadTheDocs = "https://nelambu.readthedocs.io"
 
 [tool.pytest.ini_options]
+pythonpath = ["src"]
 testpaths = ["tests"]
 
 
@@ -78,7 +79,10 @@ legacy_tox_ini = """
 envlist = py310,py311,py312,py313,py314
 skip_missing_interpreters = true
 [testenv]
-commands = pytest
+commands =
+    pytest
+    ruff check
+    ruff format --check
 extras = dev
 """
 
@@ -91,12 +95,10 @@ extend-exclude = ["docs"]
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-# Enable Pyflakes `E` and `F` codes by default.
 select = ["ALL"]
 ignore = [
-    "ANN101", # Missing type annotation for `self` in method
-    "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN204", # Missing return type annotation for special (dunder) method
+    "COM812", # Missing trailing comma
     "FBT",    # Using boolean function arguments
     "TD",     # TODOs
     "FIX001", # Resolve FIXMEs
