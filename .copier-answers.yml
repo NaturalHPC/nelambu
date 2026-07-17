@@ -1,0 +1,32 @@
+# Changes here will be overwritten by Copier
+SelectCitation:
+- AddCitationFile_flag
+- AddCFFConvert_flag
+SelectCodeQualityFeatures:
+- AddLocalTests_flag
+- SelectGitHubActions_flag
+- AddLinting_flag
+- AddSonarCloud_flag
+- AddEditorConfig_flag
+SelectCommunityFeatures: []
+SelectDocumentationFeatures:
+- AddLocalDocumentation_flag
+- AddOnlineDocumentation_flag
+SelectGitHubActions:
+- AddGitHubActionBuild_flag
+SelectPublishReleaseFeatures:
+- SelectCitation_flag
+- AddChangeLog_flag
+- AddZenodo_flag
+_commit: 0.6.1
+_src_path: https://github.com/nlesc/python-template.git
+copyright_holder: Netherlands eScience Center, University of Amsterdam, Utrecht University
+email: l.veen@esciencecenter.nl
+full_name: Lourens Veen
+github_organization: NaturalHPC
+keywords: networking,RPC,server,client
+license: Apachev2
+package_name: nelambu
+package_short_description: A simple networking layer for doing RPC
+template_profile: ask
+version: 0.1.0

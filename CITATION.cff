@@ -1,0 +1,17 @@
+# YAML 1.2
+---
+cff-version: "1.2.0"
+title: "nelambu"
+authors:
+  - family-names: Veen
+    given-names: Lourens
+    orcid: "https://orcid.org/0000-0002-6311-1168"
+date-released: 2026-07-17
+version: "0.1.0"
+repository-code: "https://github.com/NaturalHPC/nelambu"
+keywords:
+  - "networking"
+  - "RPC"
+  - "server"
+  - "client"
+message: "If you use this software, please cite it using these metadata."
