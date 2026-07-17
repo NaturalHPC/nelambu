@@ -1,7 +1,7 @@
 """Tests for the nelambu.my_module module."""
 
 import pytest
-from nelambu.my_module import hello
+from nelambu import hello
 
 
 def test_hello() -> None:
