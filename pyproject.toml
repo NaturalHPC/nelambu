@@ -66,7 +66,7 @@ ReadTheDocs = "https://nelambu.readthedocs.io"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["**/tests"]
+testpaths = ["src/**/tests"]
 
 [tool.coverage.run]
 branch = true
@@ -113,6 +113,7 @@ ignore = [
     "ANN204", # Missing return type annotation for special (dunder) method
     "ANN401", # Use of Any (I don't use Any unless necessary)
     "COM812", # Missing trailing comma
+    "CPY001", # Missing copyright notice in every file
     "FBT",    # Using boolean function arguments
     "TD",     # TODOs
     "TRY",    # Exception handling (Too many false positives)
@@ -136,6 +137,7 @@ pydocstyle.convention = "google"
 # Tests can ignore a few extra rules
 "**/tests/**.py" = [
     "ARG001", # Unused function argument (False positive on fixtures)
+    "PLR2004", # Unnamed numerical constants (ok in tests)
     "S101",   # Use of assert is detected
     "SLF001", # Private member accessed
 ]

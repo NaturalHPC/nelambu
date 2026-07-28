@@ -1,6 +1,7 @@
 from nelambu._impl.tcp_transport_client import TcpTransportClient
 from nelambu._impl.tcp_transport_server import RequestHandler
 from nelambu._impl.tcp_transport_server import TcpTransportServer
+from nelambu._impl.tcp_util import SocketClosedError
 from nelambu._impl.transport_client import ProfileHandler
 from nelambu._impl.transport_client import TimeoutHandler
 from nelambu._impl.transport_client import TransportClient

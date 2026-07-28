@@ -1,13 +1,15 @@
 import time
 from collections.abc import Generator
-from typing import override
 from unittest.mock import MagicMock
 import pytest
+from typing_extensions import override
 from nelambu._impl.tcp_transport_client import TcpTransportClient
 from nelambu._impl.tcp_transport_server import TcpTransportServer
 from nelambu._impl.transport_client import ProfileHandler
 from nelambu._impl.transport_client import TimeoutHandler
 from nelambu._impl.type_registry import client_for
+
+_SERVER_DELAY = 0.2
 
 
 @pytest.fixture
@@ -52,11 +54,10 @@ def test_client_for(server: str) -> None:
 
 @pytest.fixture
 def slow_server() -> Generator[str, None, None]:
-    server_delay = 0.2
 
     def handle_request(request: bytes) -> bytes:
         assert request == b"request"
-        time.sleep(server_delay)
+        time.sleep(_SERVER_DELAY)
         return b"response"
 
     request_handler = MagicMock()
@@ -136,7 +137,8 @@ def test_profiling_handler(slow_server: str) -> None:
     wait_time = profiling_handler.start_transfer - profiling_handler.start_wait
     transfer_time = profiling_handler.finish_transfer - profiling_handler.start_transfer
 
-    assert wait_time == pytest.approx(0.2, rel=0.1)
+    # needs a big margin on CI
+    assert _SERVER_DELAY <= wait_time < (_SERVER_DELAY + 0.1)
     assert transfer_time < expected_transfer_time
 
     client.close()

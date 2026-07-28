@@ -8,10 +8,10 @@ from socket import SHUT_RD
 from socket import SHUT_RDWR
 from socket import SHUT_WR
 from socket import SocketType
-from typing import override
 from unittest.mock import patch
 import pytest
 from typing_extensions import Buffer
+from typing_extensions import override
 from nelambu import RequestHandler
 from nelambu import TcpTransportClient
 from nelambu import TcpTransportServer
@@ -32,9 +32,9 @@ def _inject_fault(socket: SocketType) -> None:
     fault_prob = 0.0
     if 0.0 < t < 1.0:
         fault_prob = t * _FAULT_PROB_MAX
-    elif 1.0 < t < 2.0:  # noqa: PLR2004
+    elif 1.0 < t < 2.0:
         fault_prob = _FAULT_PROB_MAX
-    elif 2.0 < t < 3.0:  # noqa: PLR2004
+    elif 2.0 < t < 3.0:
         fault_prob = (3.0 - t) * _FAULT_PROB_MAX
 
     if random() < fault_prob:
