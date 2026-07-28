@@ -1,0 +1,300 @@
+import logging
+import select
+import socket
+import time
+from typing_extensions import Buffer
+from nelambu._impl.tcp_util import is_disconnect
+from nelambu._impl.tcp_util import recv_frame
+from nelambu._impl.tcp_util import recv_int64
+from nelambu._impl.tcp_util import send_frame
+from nelambu._impl.tcp_util import send_int64
+from nelambu._impl.transport_client import ProfileHandler
+from nelambu._impl.transport_client import TimeoutHandler
+from nelambu._impl.transport_client import TransportClient
+from nelambu._impl.util import Retrier
+
+_logger = logging.getLogger("nelambu")
+
+
+_CONNECT_TIMEOUT = 3.0  # seconds
+RECONNECT_TIMEOUT = 60.0  # seconds
+
+
+class TcpTransportClient(TransportClient):
+    """A client that connects to a TCPTransport server."""
+
+    @staticmethod
+    def can_connect_to(location: str) -> bool:
+        """Whether this client class can connect to the given location.
+
+        Args:
+            location: The location to potentially connect to.
+
+        Returns:
+            True iff this class can connect to this location.
+        """
+        return location.startswith("tcp:")
+
+    def __init__(self, location: str) -> None:
+        """Create a TcpClient for a given location.
+
+        The client will connect to this location and be able to send requests to it and
+        return the response.
+
+        Args:
+            location: A location string for the peer.
+        """
+        self._addresses = location[4:].split(",")
+        self._socket: socket.SocketType | None = None
+        self._session = 0
+        self._cur_request = 0
+
+        self._reconnect(False)
+
+    def call(
+        self,
+        request: Buffer,
+        timeout_handler: TimeoutHandler | None = None,
+        profile_handler: ProfileHandler | None = None,
+    ) -> Buffer:
+        """Send a request to the server and receive the response.
+
+        This is a blocking call.
+
+        Args:
+            request: The request to send
+            timeout_handler: Optional timeout handler. This is used for communication
+                deadlock detection.
+            profile_handler: Optional handler that is called at several points during
+            the receive, so that it can be profiled.
+
+        Returns:
+            The received response
+        """
+        self._cur_request += 1
+        retrier = Retrier(RECONNECT_TIMEOUT)
+        deadline = None
+        did_timeout = False
+
+        def handle_timeout() -> None:
+            nonlocal deadline
+            nonlocal did_timeout
+
+            assert timeout_handler is not None  # mypy
+            assert deadline is not None  # mypy
+
+            timeout_handler.on_timeout()
+            deadline += timeout_handler.timeout
+            did_timeout = True
+
+        while True:
+            try:
+                if deadline is not None and deadline < time.monotonic():  # type: ignore[unreachable]
+                    handle_timeout()
+
+                if self._socket is None:
+                    raise ConnectionError("No connection could be established")
+
+                send_int64(self._socket, self._cur_request)
+                send_frame(self._socket, request)
+
+                if profile_handler:
+                    profile_handler.on_start_wait()
+
+                if timeout_handler is not None:
+                    if deadline is None:
+                        deadline = time.monotonic() + timeout_handler.timeout
+
+                    while not self._poll(deadline - time.monotonic()):
+                        handle_timeout()
+
+                    if did_timeout:
+                        timeout_handler.on_receive()
+                        did_timeout = False
+
+                response = recv_frame(self._socket, profile_handler)
+
+                if profile_handler:
+                    profile_handler.on_finish_transfer()
+
+                return response
+
+            except Exception as e:
+                if is_disconnect(e):
+                    self._handle_disconnect(retrier)
+                else:
+                    raise
+
+    def close(self) -> None:
+        """Closes this client.
+
+        This closes any connections this client has and performs other shutdown
+        activities as needed.
+        """
+        self._end_session()
+        self._close_connection()
+
+    def _poll(self, timeout: float) -> bool:
+        """Poll the socket and return whether its ready for receiving.
+
+        This method blocks until the socket is ready for receiving, or
+        :py:param:`timeout` seconds have passed (whichever is earlier).
+
+        Do not use if self._socket is None.
+
+        Args:
+            timeout: timeout in seconds
+
+        Returns:
+            True if the socket is ready for receiving data, False otherwise.
+        """
+        assert self._socket is not None
+        if self._poll_obj is not None:
+            ready_events = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
+            return bool(ready_events)
+
+        # Fallback to select()
+        ready_sockets, _, _ = select.select([self._socket], (), (), timeout)
+        return bool(ready_sockets)
+
+    def _handle_disconnect(self, retrier: Retrier) -> None:
+        """Handles a broken network connection.
+
+        Args:
+            retrier: A Retrier that keeps track of timing any retries
+        """
+        _logger.info(
+            "The TCP network connection with %s was lost unexpectedly.", self._addresses
+        )
+
+        try:
+            self._close_connection()
+        except Exception as e:
+            if not is_disconnect(e):
+                raise
+
+        if retrier.should_give_up():
+            _logger.warning(
+                "I am unable to reconnect to %s despite repeated"
+                " attempts, and I am giving up. Please check your network.",
+                self._addresses,
+            )
+            raise  # noqa: PLE0704
+
+        retrier.sleep()
+
+        _logger.debug("Trying to reconnect to %s", self._addresses)
+
+        self._reconnect()
+
+    def _reconnect(self, re: bool = True) -> None:
+        """(Re)connect to the server and resume the current session.
+
+        Args:
+            re: True if this is a reconnect rather than an initial connect.
+        """
+        try:
+            self._make_connection()
+            assert self._socket is not None
+            send_int64(self._socket, self._session)
+            self._session = recv_int64(self._socket)
+
+            if re:
+                _logger.info("Reconnected to %s, resuming the request", self._addresses)
+
+        except Exception as e:
+            if is_disconnect(e):
+                self._close_connection()
+                _logger.info(
+                    "Failed to reconnect to %s, will retry later", self._addresses
+                )
+            else:
+                raise
+
+    def _make_connection(self) -> None:
+        """Connect to the server and set up polling.
+
+        Uses self._addresses and creates a (new) self._socket and self._poll_obj.
+        """
+        sock: socket.SocketType | None = None
+        for address in self._addresses:
+            try:
+                sock = self._connect(address)
+                break
+            except RuntimeError:
+                pass
+
+        if sock is None:
+            raise ConnectionRefusedError("Failed to connect")
+
+        if hasattr(socket, "TCP_NODELAY"):
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        if hasattr(socket, "TCP_QUICKACK"):
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
+        self._socket = sock
+
+        if hasattr(select, "poll"):
+            self._poll_obj: select.poll | None = select.poll()
+            self._poll_obj.register(self._socket, select.POLLIN)  # type: ignore[union-attr]
+        else:
+            self._poll_obj = None  # On platforms that don't support select.poll
+
+    def _connect(self, address: str) -> socket.SocketType:
+        loc_parts = address.rsplit(":", 1)
+        host = loc_parts[0]
+        if host.startswith("["):
+            if host.endswith("]"):
+                host = host[1:-1]
+            else:
+                raise RuntimeError("Invalid address")
+        port = int(loc_parts[1])
+
+        addrinfo = socket.getaddrinfo(
+            host, port, 0, socket.SOCK_STREAM, socket.IPPROTO_TCP
+        )
+
+        for family, socktype, proto, _, sockaddr in addrinfo:
+            try:
+                sock = socket.socket(family, socktype, proto)
+                sock.settimeout(_CONNECT_TIMEOUT)
+                sock.connect(sockaddr)
+                sock.settimeout(None)
+                return sock
+            except (ConnectionRefusedError, ConnectionAbortedError):
+                _logger.debug("Failed to connect to %s", sockaddr)
+                sock.close()
+                break
+
+            except Exception as e:
+                _logger.debug("Failed to connect socket: %s", e)
+                sock.close()
+                break
+
+        raise RuntimeError("Could not connect")
+
+    def _end_session(self) -> None:
+        try:
+            if self._socket is not None:
+                send_int64(self._socket, 0)
+        except Exception as e:
+            # This can raise if the server has shut down already when we close our
+            # connection to it, which is fine and can be ignored. Otherwise, we reraise.
+            if not is_disconnect(e):
+                raise
+
+            _logger.info(
+                "Disconnected while trying to end session, shutdown will take"
+                " longer than usual because of this."
+            )
+
+    def _close_connection(self) -> None:
+        if self._socket is not None:
+            try:
+                self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
+            except Exception as e:
+                # This can raise if the peer has shut down already when we close our
+                # connection to it, which is fine and can be ignored. Otherwise, we
+                # reraise.
+                if not is_disconnect(e):
+                    raise

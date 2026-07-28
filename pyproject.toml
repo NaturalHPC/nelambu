@@ -12,7 +12,7 @@ authors = [
     { name = "Lourens Veen", email = "l.veen@esciencecenter.nl" }
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "",
@@ -24,10 +24,11 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-dependencies = []
+dependencies = ["psutil", "typing_extensions"]
 description = "A simple networking layer for doing RPC"
 keywords = ["networking","RPC","server","client"]
-license = {file = "LICENSE"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 name = "nelambu"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
@@ -65,8 +66,7 @@ ReadTheDocs = "https://nelambu.readthedocs.io"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["tests"]
-
+testpaths = ["**/tests"]
 
 [tool.coverage.run]
 branch = true
@@ -78,12 +78,25 @@ legacy_tox_ini = """
 [tox]
 envlist = py310,py311,py312,py313,py314
 skip_missing_interpreters = true
+
 [testenv]
 commands =
-    pytest
+    pytest --cov --cov-report=term-missing {posargs}
     ruff check
     ruff format --check
 extras = dev
+
+[testenv:docs]
+description = Build documentation using Sphinx
+basepython = python3
+deps =
+    myst_parser
+    pytest
+    recommonmark
+    sphinx
+    sphinx_autoapi
+    sphinx_rtd_theme
+commands = sphinx-build -c docs -b html docs/source docs/_build
 """
 
 [tool.ruff]
@@ -98,23 +111,33 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 select = ["ALL"]
 ignore = [
     "ANN204", # Missing return type annotation for special (dunder) method
+    "ANN401", # Use of Any (I don't use Any unless necessary)
     "COM812", # Missing trailing comma
     "FBT",    # Using boolean function arguments
     "TD",     # TODOs
+    "TRY",    # Exception handling (Too many false positives)
+    "PERF",   # Micro-optimisation (No premature optimisation)
+    "EM",     # String literal in exception (not worth the extra code)
     "FIX001", # Resolve FIXMEs
     "FIX002", # Resolve TODOs
     # No docstrings required in the following cases
     "D100", # Missing module docstring
     "D104", # Missing public package docstring
     "D105", # Missing docstring in magic method
+    "S101", # Use of assert (We use it only to help the type checker)
+    "S311", # Consider pseudo-RNG suspicious (False positives)
+    "BLE001", # Blind exceptions (Can't know which exceptions will be thrown in Python)
+    "PLR0912", # Too many branches (Doesn't actually measure complexity)
+    "C901", # Complex structure (Doesn't actually measure complexity)
 ]
 pydocstyle.convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 # Tests can ignore a few extra rules
-"tests/**.py" = [
-    "PT011",  # Missing `match` parameter in `pytest.raises()`
+"**/tests/**.py" = [
+    "ARG001", # Unused function argument (False positive on fixtures)
     "S101",   # Use of assert is detected
+    "SLF001", # Private member accessed
 ]
 
 [tool.ruff.lint.isort]

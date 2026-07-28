@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u"nelambu"
-copyright = u"2026-07-17 11:28:20, Netherlands eScience Center, University of Amsterdam, Utrecht University"
+copyright = u"2018-2026 Netherlands eScience Center, University of Amsterdam, Utrecht University"
 author = u"Lourens Veen"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -36,7 +36,6 @@ release = version
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
@@ -60,8 +59,10 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 todo_include_todos = False
 
 # -- Use autoapi.extension to run sphinx-apidoc -------
-
-autoapi_dirs = ['../src/nelambu']
+autoapi_dirs = ["../../src"]
+autoapi_options = [
+        "members", "undoc-members", "show-inheritance", "show-module-summary",
+        "special-members", "imported-members"]
 
 # -- Options for HTML output ----------------------------------------------
 
