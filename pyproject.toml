@@ -80,6 +80,7 @@ envlist = py310,py311,py312,py313,py314
 skip_missing_interpreters = true
 
 [testenv]
+pass_env = CI
 commands =
     pytest --cov --cov-report=term-missing {posargs}
     ruff check
