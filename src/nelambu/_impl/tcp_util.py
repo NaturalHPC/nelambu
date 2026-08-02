@@ -16,11 +16,18 @@ _CONNECTION_ERRORS = (BrokenPipeError, ConnectionError, SocketClosedError, Timeo
 _CONNECTION_ERRNOS = (EBADF, ENOTCONN)
 
 
+_CONNECTION_WINERRORS = (10038,)
+
+
 def is_disconnect(exception: Exception) -> bool:
     """Checks whether this is a disconnect or another problem."""
     if isinstance(exception, _CONNECTION_ERRORS):
         return True
-    return isinstance(exception, OSError) and exception.errno in _CONNECTION_ERRNOS
+    if isinstance(exception, OSError):
+        if hasattr(exception, "winerror"):
+            return exception.winerror in _CONNECTION_WINERRORS
+        return exception.errno in _CONNECTION_ERRNOS
+    return False
 
 
 def recv_all(socket: SocketType, length: int) -> Buffer:
