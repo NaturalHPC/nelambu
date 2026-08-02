@@ -30,7 +30,7 @@ jobs:
           which python
           python --version
       - name: Install tox
-        run: python3 -m pip install tox
+        run: python3 -m pip install tox tox-gh
       - name: Run unit tests
         run: tox
 
