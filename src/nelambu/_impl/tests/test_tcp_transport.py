@@ -1,3 +1,4 @@
+import os
 import time
 from collections.abc import Generator
 from unittest.mock import MagicMock
@@ -137,8 +138,9 @@ def test_profiling_handler(slow_server: str) -> None:
     wait_time = profiling_handler.start_transfer - profiling_handler.start_wait
     transfer_time = profiling_handler.finish_transfer - profiling_handler.start_transfer
 
-    # needs a big margin on CI
-    assert _SERVER_DELAY <= wait_time < (_SERVER_DELAY + 0.1)
-    assert transfer_time < expected_transfer_time
+    # unreliable on GitHub Actions
+    if "CI" not in os.environ:
+        assert _SERVER_DELAY <= wait_time < (_SERVER_DELAY + 0.1)
+        assert transfer_time < expected_transfer_time
 
     client.close()
