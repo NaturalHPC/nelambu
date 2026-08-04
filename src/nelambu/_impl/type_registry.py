@@ -14,7 +14,7 @@ def client_for(location: str) -> TransportClient:
 
     Args:
         location: The location to connect to. Must be obtained from
-        :meth:`TransportServer.get_location`.
+            :meth:`TransportServer.get_location`.
 
     Returns:
         A :class:`TransportClient` connected to the given location.
