@@ -3,7 +3,20 @@
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-#
+
+def get_version():
+    version = "unknown"
+    try:
+        # readthedocs installs the package first
+        import sanotehu
+        version = sanotehu.__version__
+    except ImportError:
+        import subprocess
+        result = subprocess.run(["git", "describe"], capture_output=True)
+        if result.returncode == 0:
+            version = result.stdout.decode("utf-8").strip()
+    return version
+
 
 # -- Path setup --------------------------------------------------------------
 
@@ -26,9 +39,9 @@ author = u"Lourens Veen"
 # built documents.
 #
 # The short X.Y version.
-version = "0.1.0"
+version = get_version()
 # The full version, including alpha/beta/rc tags.
-release = version
+release = get_version()
 
 # -- General configuration ------------------------------------------------
 

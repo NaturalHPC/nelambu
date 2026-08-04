@@ -1,3 +1,4 @@
+from importlib.metadata import version
 from nelambu._impl.tcp_transport_client import TcpTransportClient
 from nelambu._impl.tcp_transport_server import RequestHandler
 from nelambu._impl.tcp_transport_server import TcpTransportServer
@@ -10,7 +11,7 @@ from nelambu._impl.type_registry import client_for
 
 __author__ = "Lourens Veen"
 __email__ = "l.veen@esciencecenter.nl"
-__version__ = "0.1.0"
+__version__ = version("nelambu")
 
 
 __all__ = (
