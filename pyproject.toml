@@ -4,18 +4,20 @@
 # - https://www.python.org/dev/peps/pep-0621/
 
 [build-system]
-requires = ["setuptools>=64.0.0", "setuptools-scm", "wheel"]
+requires = ["setuptools>=64.0.0", "setuptools-scm[simple]", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
+name = "nelambu"
+description = "A simple networking layer for doing RPC"
 authors = [
     { name = "Lourens Veen", email = "l.veen@esciencecenter.nl" }
 ]
+keywords = ["networking","RPC","server","client"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -24,20 +26,17 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-dependencies = ["psutil", "typing_extensions"]
-description = "A simple networking layer for doing RPC"
-keywords = ["networking","RPC","server","client"]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-name = "nelambu"
 readme = {file = "README.md", content-type = "text/markdown"}
+
+dynamic = ["version"]
 requires-python = ">=3.10"
-version = "0.1.0"
+dependencies = ["psutil", "typing_extensions"]
 
 [project.optional-dependencies]
 dev = [
     "build",  # build is not only used in publishing (below), but also in the template's test suite
-    "bump-my-version",
     "coverage [toml]",
     "pytest",
     "pytest-cov",
