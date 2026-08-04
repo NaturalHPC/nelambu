@@ -77,7 +77,7 @@ class TransportClient:
             timeout_handler: Optional timeout handler. This is used for communication
                 deadlock detection.
             profile_handler: Optional handler that is called at several points during
-            the receive, so that it can be profiled.
+                the receive, so that it can be profiled.
 
         Returns:
             The received response, and the timestamps
