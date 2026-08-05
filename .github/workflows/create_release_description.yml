@@ -44,6 +44,6 @@ jobs:
       - id: create_description
         name: Create a description for the release
         run: |
-          DESC="$(echo -E "\"# Capsuli "${{ steps.get_version.outputs.version }}"\\n\\n"${{ steps.get_overview.outputs.overview }}"\\n\\n"${{ steps.get_changes.outputs.changes }}"\"")"
+          DESC="$(echo -E "\"# Nelambu "${{ steps.get_version.outputs.version }}"\\n\\n"${{ steps.get_overview.outputs.overview }}"\\n\\n"${{ steps.get_changes.outputs.changes }}"\"")"
           echo "description=$DESC" >> $GITHUB_OUTPUT
 
