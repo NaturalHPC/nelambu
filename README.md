@@ -1,10 +1,6 @@
 # Nelambu
 
-| Static analysis                    | [![workflow scq badge](https://sonarcloud.io/api/project_badges/measure?project=NaturalHPC_nelambu&metric=alert_status)](https://sonarcloud.io/dashboard?id=NaturalHPC_nelambu) |
-| Coverage                           | [![workflow scc badge](https://sonarcloud.io/api/project_badges/measure?project=NaturalHPC_nelambu&metric=coverage)](https://sonarcloud.io/dashboard?id=NaturalHPC_nelambu) || Documentation                      | [![Documentation Status](https://readthedocs.org/projects/nelambu/badge/?version=latest)](https://nelambu.readthedocs.io/en/latest/?badge=latest) || **GitHub Actions**                 | &nbsp; |
-| Build                              | [![build](https://github.com/NaturalHPC/nelambu/actions/workflows/build.yml/badge.svg)](https://github.com/NaturalHPC/nelambu/actions/workflows/build.yml) |
-| Citation data consistency          | [![cffconvert](https://github.com/NaturalHPC/nelambu/actions/workflows/cffconvert.yml/badge.svg)](https://github.com/NaturalHPC/nelambu/actions/workflows/cffconvert.yml) || SonarCloud                         | [![sonarcloud](https://github.com/NaturalHPC/nelambu/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/NaturalHPC/nelambu/actions/workflows/sonarcloud.yml) |## How to use nelambu
-
+[![Documentation](https://readthedocs.org/projects/nelambu/badge/?version=latest)](https://nelambu.readthedocs.io/en/latest/?badge=latest) [![CI](https://github.com/NaturalHPC/nelambu/actions/workflows/test.yml/badge.svg)](https://github.com/NaturalHPC/nelambu/actions/workflows/test.yml) [![CFF](https://github.com/NaturalHPC/nelambu/actions/workflows/cffconvert.yml/badge.svg)](https://github.com/NaturalHPC/nelambu/actions/workflows/cffconvert.yml)
 
 Nelambu is a networking layer for doing RPC:
 

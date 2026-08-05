@@ -1,4 +1,4 @@
-name: cffconvert
+name: cff metadata
 
 on:
   push:
