@@ -107,7 +107,7 @@ deps =
     sphinx
     sphinx_autoapi
     sphinx_rtd_theme
-commands = sphinx-build -c docs -b html docs/source docs/_build
+commands = sphinx-build -b html docs/source docs/_build
 """
 
 [tool.ruff]
