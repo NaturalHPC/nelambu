@@ -3,7 +3,20 @@
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-#
+
+def get_version():
+    version = "unknown"
+    try:
+        # readthedocs installs the package first
+        import sanotehu
+        version = sanotehu.__version__
+    except ImportError:
+        import subprocess
+        result = subprocess.run(["git", "describe"], capture_output=True)
+        if result.returncode == 0:
+            version = result.stdout.decode("utf-8").strip()
+    return version
+
 
 # -- Path setup --------------------------------------------------------------
 
@@ -18,7 +31,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u"nelambu"
-copyright = u"2026-07-17 11:28:20, Netherlands eScience Center, University of Amsterdam, Utrecht University"
+copyright = u"2018-2026 Netherlands eScience Center, University of Amsterdam, Utrecht University"
 author = u"Lourens Veen"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -26,9 +39,9 @@ author = u"Lourens Veen"
 # built documents.
 #
 # The short X.Y version.
-version = "0.1.0"
+version = get_version()
 # The full version, including alpha/beta/rc tags.
-release = version
+release = get_version()
 
 # -- General configuration ------------------------------------------------
 
@@ -36,7 +49,6 @@ release = version
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
@@ -60,8 +72,10 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 todo_include_todos = False
 
 # -- Use autoapi.extension to run sphinx-apidoc -------
-
-autoapi_dirs = ['../src/nelambu']
+autoapi_dirs = ["../../src"]
+autoapi_options = [
+        "members", "undoc-members", "show-inheritance", "show-module-summary",
+        "special-members", "imported-members"]
 
 # -- Options for HTML output ----------------------------------------------
 
