@@ -47,6 +47,9 @@ dev = [
     "tox",
 ]
 docs = [
+    "myst_parser",
+    "pytest",
+    "recommonmark",
     "sphinx",
     "sphinx_rtd_theme",
     "sphinx-autoapi",
