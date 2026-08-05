@@ -55,7 +55,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.get-description.outputs.version }}
-          name: Capsuli ${{ needs.get-description.outputs.version }}
+          name: Nelambu ${{ needs.get-description.outputs.version }}
           body: ${{ fromJSON(needs.get-description.outputs.description) }}
 
   build-python-packages:
