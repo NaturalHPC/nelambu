@@ -8,8 +8,8 @@ def get_version():
     version = "unknown"
     try:
         # readthedocs installs the package first
-        import sanotehu
-        version = sanotehu.__version__
+        import nelambu
+        version = nelambu.__version__
     except ImportError:
         import subprocess
         result = subprocess.run(["git", "describe"], capture_output=True)
