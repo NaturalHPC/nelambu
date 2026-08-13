@@ -158,17 +158,3 @@ known-first-party = ["nelambu"]
 force-single-line = true
 no-lines-before = ["future","standard-library","third-party","first-party","local-folder"]
 
-[tool.bumpversion]
-current_version = "0.1.0"
-
-[[tool.bumpversion.files]]
-filename = "src/nelambu/__init__.py"
-
-[[tool.bumpversion.files]]
-filename = "pyproject.toml"
-
-[[tool.bumpversion.files]]
-filename = "CITATION.cff"
-
-[[tool.bumpversion.files]]
-filename = "docs/conf.py"
